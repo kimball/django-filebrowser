@@ -212,8 +212,16 @@ def test_delete(test):
 
 def setUp(self):
     # Create a site_tester user
-    from django.contrib.auth.models import User
-    user = User.objects.create_user('site_tester', 'st@willworkforfood.com', 'secret')
+    try:
+        from django.contrib.auth import get_user_model
+    except ImportError: # django < 1.5
+        from django.contrib.auth.models import User
+    else:
+        User = get_user_model()
+    self.username = 'site_tester'
+    self.email = 'st@willworkforfood.com'
+    self.password = 'secret'
+    user = User.objects.create_user(self.username, self.email, self.password)
     user.is_staff = True
     user.save()
     # Obtain the site object
@@ -227,7 +235,7 @@ def tearDown(self):
 
 def runTest(self):
     # Login
-    response = self.c.login(username='site_tester', password='secret')
+    response = self.c.login(username=self.email, password=self.password)
     self.assertTrue(response)
     # Execute tests
     test_browse(self)
